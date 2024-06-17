@@ -19,8 +19,10 @@ def main():
         link = input("Introduce el link del video de YouTube (o 'q' para salir): ")
         if link.lower() == 'q':
             break
-        format = input("Introduce el formato (mp4/mp3/wav): ")
-        calidad = input("Introduce la calidad (rapida/media/mayor): ")
+        format = input("Introduce el formato (mp4/mp3/wav): ").lower()
+        calidad = None
+        if format == 'mp4':
+            calidad = input("Introduce la calidad (rapida/mayor): ").lower()
         
         # Verificar si el enlace es una playlist
         playlist_status = "Si" if is_playlist(link) else "No"
@@ -31,10 +33,10 @@ def main():
         # Descargar el video o el audio según el formato seleccionado
         if playlist_status == "Si":
             download_playlist(link, format, calidad)
-        elif format.lower() == 'mp4':
+        elif format == 'mp4':
             download_video(link, calidad)
-        elif format.lower() in ['mp3', 'wav']:
-            download_audio(link, format.lower())
+        elif format in ['mp3', 'wav']:
+            download_audio(link, format)
 
     print("Enlaces guardados en el Excel con éxito.")
 
