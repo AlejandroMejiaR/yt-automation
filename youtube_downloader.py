@@ -69,7 +69,7 @@ def download_video(link, calidad, subir_a_drive, output_path="./videos"):
 
 def download_audio(link, format, subir_a_drive, output_path="./audio"):
     yt = YouTube(link)
-    audio_stream = yt.streams.filter(only_audio=True).first()
+    audio_stream = yt.streams.filter(only_audio=True).order_by('abr').desc().first()
     if audio_stream:
         print(f"Descargando audio: {yt.title}")
         sanitized_title = sanitize_filename(yt.title)
