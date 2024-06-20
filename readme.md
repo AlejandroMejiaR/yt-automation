@@ -6,7 +6,7 @@ Este proyecto permite descargar videos y audios de YouTube y subirlos a una carp
 
 - Descargar videos de YouTube en formato MP4.
 - Descargar audios de YouTube en formato MP3 o WAV.
-- Elegir entre dos calidades para los videos: rápida (720p) y mayor (resolución más alta disponible posible).
+- Elegir entre dos calidades para los videos: rápida (maximo 720p) y mayor (resolución más alta disponible posible).
 - Subir los archivos descargados a Google Drive manteniendo la estructura de carpetas local.
 
 ## Requisitos
