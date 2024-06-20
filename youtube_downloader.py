@@ -1,6 +1,7 @@
 from pytube import YouTube, Playlist
 from pytube.exceptions import AgeRestrictedError
 from moviepy.editor import VideoFileClip, AudioFileClip
+from drive_uploader import subir_archivo
 import os
 import re
 
@@ -12,8 +13,7 @@ def sanitize_filename(filename):
     # Eliminar caracteres no válidos del nombre del archivo
     return re.sub(r'[\\/*?:"<>|]', "", filename)
 
-def download_video(link, calidad, output_path="./videos"):
-    # Intentar inicializar el objeto YouTube, manejar la excepción de restricción de edad
+def download_video(link, calidad, subir_a_drive, output_path="./videos"):
     try:
         yt = YouTube(link)
     except AgeRestrictedError:
@@ -21,7 +21,6 @@ def download_video(link, calidad, output_path="./videos"):
         return
     
     if calidad == 'rapida':
-        # Descargar el video progresivo con la resolución más alta disponible
         video_stream = yt.streams.filter(progressive=True, file_extension='mp4').order_by('resolution').desc().first()
         if video_stream:
             print(f"Descargando video: {yt.title} en resolución {video_stream.resolution}")
@@ -29,11 +28,12 @@ def download_video(link, calidad, output_path="./videos"):
             res_path = os.path.join(output_path, video_stream.resolution)
             if not os.path.exists(res_path):
                 os.makedirs(res_path)
-            video_stream.download(res_path, filename=f"{sanitized_title}.mp4")
+            video_file_path = video_stream.download(res_path, filename=f"{sanitized_title}.mp4")
+            if subir_a_drive:
+                subir_archivo(video_file_path, res_path)
         else:
             print("No se encontró un stream de video adecuado.")
     elif calidad == 'mayor':
-        # Descargar el stream de video de mayor resolución y el stream de audio de mayor bitrate, luego combinarlos
         video_stream = yt.streams.filter(file_extension='mp4', progressive=False).order_by('resolution').desc().first()
         audio_stream = yt.streams.filter(only_audio=True).order_by('abr').desc().first()
         
@@ -48,7 +48,7 @@ def download_video(link, calidad, output_path="./videos"):
             video_path = video_stream.download(res_path, filename=f"{sanitized_title}_video.mp4")
             audio_path = audio_stream.download(res_path, filename=f"{sanitized_title}_audio.mp4")
             
-            # Combinar video y audio usando MoviePy
+            # Combinar video y audio
             video_clip = VideoFileClip(video_path)
             audio_clip = AudioFileClip(audio_path)
             final_clip = video_clip.set_audio(audio_clip)
@@ -60,11 +60,14 @@ def download_video(link, calidad, output_path="./videos"):
             audio_clip.close()
             os.remove(video_path)
             os.remove(audio_path)
+            
+            video_file_path = os.path.join(res_path, f"{sanitized_title}.mp4")
+            if subir_a_drive:
+                subir_archivo(video_file_path, res_path)
         else:
             print("No se encontró un stream de video o audio adecuado.")
 
-def download_audio(link, format, output_path="./audio"):
-    # Descargar el stream de audio y convertirlo al formato deseado
+def download_audio(link, format, subir_a_drive, output_path="./audio"):
     yt = YouTube(link)
     audio_stream = yt.streams.filter(only_audio=True).first()
     if audio_stream:
@@ -91,11 +94,13 @@ def download_audio(link, format, output_path="./audio"):
         
         os.remove(audio_file)  # Eliminar el archivo original .mp4
         print(f"Audio convertido a {format} y guardado como {new_file}")
+        
+        if subir_a_drive:
+            subir_archivo(new_file, format_path)
     else:
         print("No se encontró un stream de audio adecuado.")
 
-def download_playlist(link, format, calidad):
-    # Descargar cada video de una playlist, utilizando las funciones de descarga de video o audio
+def download_playlist(link, format, calidad, subir_a_drive):
     pl = Playlist(link)
     playlist_title = pl.title
     sanitized_playlist_title = sanitize_filename(playlist_title)
@@ -110,8 +115,8 @@ def download_playlist(link, format, calidad):
         try:
             print(f"Descargando video: {video.title}")
             if format.lower() == 'mp4':
-                download_video(video.watch_url, calidad, output_path)
+                download_video(video.watch_url, calidad, subir_a_drive, output_path)
             elif format.lower() in ['mp3', 'wav']:
-                download_audio(video.watch_url, format, output_path)
+                download_audio(video.watch_url, format, subir_a_drive, output_path)
         except AgeRestrictedError:
             print(f"Video restringido por edad: {video.watch_url}")

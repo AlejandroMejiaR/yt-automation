@@ -1,4 +1,3 @@
-pandas
 PyDrive2
 pytube
 moviepy
