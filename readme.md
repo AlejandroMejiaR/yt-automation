@@ -27,6 +27,7 @@ Este proyecto permite descargar videos y audios de YouTube y subirlos a una carp
 2. Configura las credenciales de Google Drive:
     - Crea un proyecto en Google Cloud Console, activa la API de Google Drive y genera un client ID y client secret.
     - Pega el client ID y client secret en el archivo `settings.yaml`.
+      
     - Ejecuta `drive_quickstart.py` para autenticarse en la aplicación y obtener las credenciales del usuario:
       ```bash
       python drive_quickstart.py
